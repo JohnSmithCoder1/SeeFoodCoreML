@@ -13,6 +13,7 @@ import Vision
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     let imagePicker = UIImagePickerController()
+    var message = ""
     
     @IBOutlet weak var imageView: UIImageView!
     
@@ -25,7 +26,18 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         imagePicker.delegate = self
         imagePicker.sourceType = .camera
-        imagePicker.allowsEditing = false
+        imagePicker.allowsEditing = true
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        let title = "Holmes, I have deduced this picture possibly contains:"
+        
+        let alert = UIAlertController(title: title, message: "\(message)", preferredStyle: .alert)
+        let action = UIAlertAction(title: "Elementary!", style: .cancel, handler: nil)
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -52,14 +64,21 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             guard let results = request.results as? [VNClassificationObservation] else {
                 fatalError("Model failed to process image.")
             }
-
-            if let firstResult = results.first {
-                if firstResult.identifier.contains("hotdog") {
-                    self.navigationItem.title = "Hotdog!"
-                } else {
-                    self.navigationItem.title = "Not Hotdog!"
-                }
+            
+            var firstTenResults = results.prefix(10)
+            
+            for result in firstTenResults {
+                self.message.append(result.identifier)
             }
+
+
+//            if let firstResult = results.first {
+//                if firstResult.identifier.contains("hotdog") {
+//                    self.navigationItem.title = "Hotdog!"
+//                } else {
+//                    self.navigationItem.title = "Not Hotdog!"
+//                }
+//            }
         }
         
         let handler = VNImageRequestHandler(ciImage: image)
